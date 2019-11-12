@@ -104,7 +104,7 @@ class CharDecoder(nn.Module):
 
         for i in range(max_length):
             ids = [self.target_vocab.char2id[char[0]] for char in current_chars]
-            input = torch.tensor(ids).long().unsqueeze(0).to(device=self.char_output_projection.weight.device)
+            input = torch.tensor(ids).long().unsqueeze(0).to(device=device)
             scores, dec_hidden = self.forward(input, dec_hidden=dec_hidden)
             probs = sm(scores)
             current_chars = [[self.target_vocab.id2char[torch.argmax(prob.squeeze(0)).item()]] for prob in probs.squeeze(0).split(1)]

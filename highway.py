@@ -23,7 +23,7 @@ class Highway(nn.Module):
         x_proj = self.rl(x_proj)
         x_gate = self.w_gate(x_proj)
         x_gate = self.sig(x_gate)
-        x_highway = x_proj*x_gate + (torch.ones(x_gate.size()) - x_gate) * x_conv_out
+        x_highway = x_proj*x_gate + (1 - x_gate) * x_conv_out
         return x_highway
 
 
