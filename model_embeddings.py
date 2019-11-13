@@ -39,6 +39,7 @@ class ModelEmbeddings(nn.Module):
         self.CNN = CNN(embed_size, embed_size, 5)
         self.highway = Highway(embed_size)
         self.drop = nn.Dropout(dropout_rate)
+        self.embed_size
 
         ### END YOUR CODE
 
@@ -58,16 +59,11 @@ class ModelEmbeddings(nn.Module):
 
         ### YOUR CODE HERE for part 1f
 
-        embed = self.embeddings(input)
-        x_reshaped= embed.permute(0, 1, 3, 2)
-
-        word_embeds = []
-        for t in x_reshaped.split(1):
-            x_conv_out = self.CNN(t.squeeze(0))
-            x_highway = self.highway(x_conv_out)
-            x_word_emb = self.drop(x_highway)
-            word_embeds.append(x_word_emb.unsqueeze(0))
-        x_embeds = torch.cat(word_embeds)
+        embed = self.embeddings(input) # (sentence_length, batch_size, max_word_length, embed_size)
+        x_reshaped= embed.permute(0, 1, 3, 2).contiguous().view(-1, self.embed_size, input.shape[2])  # (sentence_length, batch_size, embed_size, max_word_length) to (sentence_length*batch_size, embed_size, max_word_length)
+        x_conv_out = self.CNN(x_reshaped) # (sentence_length*batch_size, embed_size)
+        x_highway = self.highway(x_conv_out) # (sentence_length*batch_size, embed_size)
+        x_embeds = self.drop(x_highway).view(input.shape[0], input.shape[1], self.embed_size) # (sentence_length, batch_size, embed_size)
 
         return x_embeds
         ### END YOUR CODE
